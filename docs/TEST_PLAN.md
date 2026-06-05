@@ -260,15 +260,22 @@ tests/
 
 ---
 
-## 12. 첫 세션 체크리스트 (세션 4)
+## 12. 세션 체크리스트
 
-- [ ] `Phase 1 / Layer control / Track Logic / RED` — D-001 RED 작성
-- [ ] `pytest tests/control -v` → FAIL 확인
-- [ ] GREEN — `convert_length` 최소 구현
-- [ ] D-002~D-004 RED → GREEN
-- [ ] D-005~D-007 RED → GREEN
-- [ ] REFACTOR — entity 비율 분리, `pytest tests/ -v` PASS
-- [ ] UI Track U-001~U-004
+### 12.1 RED (세션 4) — 완료
+
+- [x] `Phase 1 / Layer control / Track Logic / RED` — D-001~D-007
+- [x] `pytest tests/entity tests/control -v` → FAIL 확인 (ImportError)
+- [x] UI Track U-001~U-004 RED — `tests/boundary/`
+
+### 12.2 GREEN PASS (세션 5) — 완료 · Golden Master 선행
+
+- [x] GREEN — `src/entity/` · `src/control/` · `src/boundary/` 최소 구현
+- [x] D-001~D-007 PASS — Logic 17 passed
+- [x] U-001~U-004 PASS — UI 4 passed
+- [x] `pytest tests/ -v` → **21 passed** (Golden Master baseline)
+- [x] P1-04 — `UnitConverter.py` → `boundary.cli.run`
+- [ ] REFACTOR — entity 비율·검증 순서 정리 (P1-11), `pytest tests/ -v` PASS 유지
 - [ ] `/review-ecb` — E001~E007 점검
 
 ---

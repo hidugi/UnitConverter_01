@@ -17,6 +17,13 @@ venv\Scripts\activate
 # 가상환경 활성화 (macOS/Linux)
 source venv/bin/activate
 
+# 개발 의존성 (pytest — 테스트 실행에 필요)
+pip install pytest
+# 또는: pip install -e ".[dev]"
+
+# 테스트
+python -m pytest tests/ -v
+
 # 실행
 python UnitConverter.py
 
@@ -168,6 +175,28 @@ pytest tests/boundary -v   # GREEN: 4 passed
 
 - [x] **P1-10** — **Green** — D-001~D-007 · U-001~U-004 최소 구현 · `pytest tests/ -v` **21 passed**
 - [ ] **P1-11** — **Refactor** — 비율 상수·검증 순서 정리 · assertion 변경 금지 · `pytest tests/ -v` PASS 유지 (SC-3)
+
+#### GREEN PASS *(Golden Master 선행 · SC-T5)*
+
+Phase 1 **Rule · Command · Test Loop** GREEN PASS 완료 — REFACTOR(P1-11) 또는 Golden Master 캡처 전 기준선.
+
+| ID | 검증 | 결과 |
+|----|------|:----:|
+| **GP-01** | Logic Track — `pytest tests/entity tests/control -v` | 17 passed |
+| **GP-02** | UI Track — `pytest tests/boundary -v` | 4 passed |
+| **GP-03** | 전체 회귀 — `pytest tests/ -v` | 21 passed |
+| **GP-04** | CLI e2e — `UnitConverter.py` → `boundary.cli.run` (P1-04) | ✅ |
+| **GP-05** | SC-1~3 · G-01~03 — D-005~D-007 · U-001 · U-004 | ✅ |
+| **SC-T5** | TEST_PLAN §10 Phase 1 GREEN PASS | ✅ |
+
+```bash
+pytest tests/entity tests/control -v   # Logic: 17 passed
+pytest tests/boundary -v               # UI: 4 passed
+pytest tests/ -v                       # Golden Master baseline: 21 passed
+python UnitConverter.py                # P1-04 CLI (예: meter:2.5)
+```
+
+**다음:** Golden Master(동작 기준선 고정) → REFACTOR(P1-11) · `/review-ecb`
 
 #### Phase 1 — 하지 않는 것 *(Mom Test 표면 문제)*
 

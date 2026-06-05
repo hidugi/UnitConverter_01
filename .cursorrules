@@ -1,0 +1,51 @@
+# UnitConverter_01 — Cursor Rules (초안)
+
+## 도메인
+- 길이 **단위 변환(unit converter)**: meter / feet / yard, 입력 `단위:숫자`.
+- 계약·비율·오류 코드의 SSoT: `docs/PRD.md` (INV-01~08, SC-1~3).
+- Phase 1 범위 밖(OOS): GUI, JSON/YAML 설정, 동적 단위 등록, inch/cm 일반화.
+
+## ECB 아키텍처
+- 레이어: `src/boundary` → `src/control` → `src/entity` (의존 방향만 허용).
+- **entity**: 비율·도메인 규칙. 외부 레이어·I/O에 의존 금지.
+- **control**: `convert_length` 등 오케스트레이션. entity만 호출.
+- **boundary**: CLI·포맷·입출력. control을 호출; entity 직접 호출 금지.
+- **entity → \* import 금지** (표준 라이브러리 제외). 상위→하위 역방향 import 금지.
+
+## Dual-Track TDD
+| Track | 대상 | Mock |
+|-------|------|------|
+| **Logic** | entity, control | **Domain Mock 금지** — 실제 비율·검증 로직으로 검증 |
+| **UI** | boundary | **Mock 허용** — stdin/stdout·포맷터 등 I/O 격리 가능 |
+
+- Track 1(명세): PRD·Rule 고정 후 착수. Track 2(구현)만 단독 진행 금지.
+- Logic/UI 트랙을 한 요청에 섞지 말 것.
+
+## 테스트 규칙
+- 디렉터리: `tests/entity`, `tests/control`(Logic) · `tests/boundary`(UI).
+- **Logic ID `D-*`**, 파일명 `test_d_*` — entity/control, Track Logic.
+- **UI ID `U-*`**, 파일명 `test_u_*` — boundary, Track UI.
+- 테스트 함수·주석에 Rule ID(INV, 오류 코드) 1:1 추적.
+- 실행: `pytest tests/ -v` (설정: `pyproject.toml`).
+
+## TDD (RED → GREEN → REFACTOR)
+- **RED**: 실패 테스트만. 구현·기존 코드 수정 금지.
+- **GREEN**: 현재 failing만 통과하는 최소 구현.
+- **REFACTOR**: 동작·공개 API·assertion 변경 금지; 구조만 정리.
+- **금지**: assert 완화, `@pytest.mark.skip`, `xfail`, 테스트 삭제로 green 만들기.
+- TDD 작업 시작 시 반드시 선언: `Phase` / `Layer`(entity|control|boundary) / `Track`(Logic|UI) / 단계(RED|GREEN|REFACTOR).
+
+## Phase 1 핵심 Rule (요약)
+- 기준 단위 meter; `1m = 3.28084ft`, `1m = 1.09361yd` (`3.28` 금지).
+- 성공 시 meter·feet·yard **전부** 출력 (INV-07).
+- 오류: `FORMAT_INVALID`, `VALUE_NOT_NUMBER`, `UNKNOWN_UNIT`, `NEGATIVE_VALUE`.
+
+## AI 행동
+- **한국어**로 응답.
+- 범위 최소화: 요청한 Phase·Layer·Track·TDD 단계만 수행.
+- OOS·표면 문제(“변환 앱 만들기”) 제안·구현 금지.
+- **git commit / push는 사용자가 명시 요청할 때만** 수행.
+- 문서·보고서는 사용자가 요청할 때만 생성.
+
+## 참고 문서
+- `docs/PRD.md`, `Report/01.REPORT.md`, `Report/02.REPORT.md`, `README.md`

@@ -73,8 +73,11 @@ deactivate
 
 | 문서 | 용도 |
 |------|------|
+| [Mom Test 보고서](Report/01.REPORT.md) | 인터뷰·증거·진짜/표면 문제 (STEP 1) |
+| [문제 정의 보고서](Report/01.UnitConverter_ProblemDefinition_Report.md) | Invariant, R-G-I-O, 세션 3 범위 |
 | [PRD](docs/PRD.md) | 입·출력, 오류 코드, Phase 로드맵, 수용 기준 (SSoT) |
-| [문제 정의 보고서](Report/01.UnitConverter_ProblemDefinition_Report.md) | Mom Test, Invariant, 세션 3 범위 |
+| [테스트 플랜](docs/TEST_PLAN.md) | Dual-Track TDD · D-*/U-* · RED/GREEN/REFACTOR 순서 |
+| [Prompt Export](Prompting/01.REPORT-Prompt.md) | Cursor 대화 기록 |
 
 ---
 
@@ -100,21 +103,50 @@ deactivate
 - [ ] **P1-07** — 미지 단위 → `UNKNOWN_UNIT`
 - [ ] **P1-08** — 음수 → `NEGATIVE_VALUE`
 
-#### Test Loop (`tests/test_convert_length.py`)
+#### RED 단계 — Logic Track *(tests만 작성, `src/` 수정 금지)*
 
-- [ ] **P1-09** — **Red** Rule별 실패 테스트 작성 (위 오류 코드 + 정상 1건)
-- [ ] **P1-10** — **Green** `convert_length` 최소 구현으로 테스트 통과
-- [ ] **P1-11** — **Refactor** 비율 상수·검증 순서 정리, 회귀 유지
+상세: [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md) · 선언: `Phase 1 / Layer {entity|control} / Track Logic / RED`
 
-#### 성공 기준 (SC-1~3)
+**공통 (RED마다)**
 
-- [ ] **SC-1** — `meter:2.5` / `feet:8.2` / `yard:2.7` 픽스처 → **1초 이내** 전 단위 환산
-- [ ] **SC-2** — `meter:2.5` → feet `8.2` (3.28084), yard 포함 · **3.28 사용 시 실패** 테스트
-- [ ] **SC-3** — 동일 입력 두 번 → 동일 결과 · refactor 후 `pytest` green
+- [x] **RED-00** — `@docs/PRD.md` Rule ID 확인 후 `tests/{entity|control}/test_d_*.py`에 **실패 테스트만** 추가
+- [x] **RED-00** — 함수명·주석에 `D-*` + Rule ID 기록 · Domain Mock 사용 금지 (E004)
+- [x] **RED-00** — `pytest tests/entity tests/control -v` 실행 → **의도적 FAIL** 확인
+
+**검증 · 오류 (`tests/control/`)**
+
+- [x] **D-001** — `FORMAT_INVALID` — `meter2.5`, `:2.5`, `meter:` → `ok=False`, `error="FORMAT_INVALID"` (`test_d_format.py`)
+- [x] **D-002** — `VALUE_NOT_NUMBER` — `meter:abc`, `feet:2.5.3` → `error="VALUE_NOT_NUMBER"` (`test_d_format.py`)
+- [x] **D-003** — `UNKNOWN_UNIT` — `cubit:1.0`, `inch:10` → `error="UNKNOWN_UNIT"`, message에 unit 포함 (`test_d_units.py`)
+- [x] **D-004** — `NEGATIVE_VALUE` — `meter:-1`, `feet:-0.1` → `error="NEGATIVE_VALUE"` (`test_d_validation.py`)
+
+**정상 환산 · 수용 기준**
+
+- [x] **D-005** — INV-07, SC-1 — 픽스처 `meter:2.5` / `feet:8.2` / `yard:2.7` → conversions에 **meter·feet·yard 3개** (`test_d_convert.py`)
+- [x] **D-006** — INV-02, SC-2 — entity 상수 `3.28084` / `1.09361` assert · `meter:2.5` → feet=`8.2`, yard=`2.7` · **3.28 사용 시 불일치** (`test_d_ratios.py`)
+- [x] **D-007** — INV-08, SC-3 — 동일 `input_str` 2회 호출 → `ConversionResult` 완전 동일 (`test_d_idempotent.py`)
 
 ```bash
-pytest tests/ -v
+pytest tests/entity tests/control -v   # RED: 신규 테스트 FAIL 기대
 ```
+
+#### RED 단계 — UI Track *(Logic Track 전체 green 이후)*
+
+선언: `Phase 1 / Layer boundary / Track UI / RED` · Logic/UI Track **한 사이클에 섞지 않음** (E006)
+
+- [x] **U-001** — Mock 성공 — CLI stdout에 `8.2 feet`, `2.7 yard` 포함 (`tests/boundary/test_u_cli_success.py`)
+- [x] **U-002** — Mock `FORMAT_INVALID` — 형식 오류 안내 출력 (`tests/boundary/test_u_cli_errors.py`)
+- [x] **U-003** — Mock `UNKNOWN_UNIT` — `Unknown unit: cubit` 유사 메시지 (`tests/boundary/test_u_cli_errors.py`)
+- [x] **U-004** — end-to-end smoke — `meter:2.5` boundary→control, Logic 결과와 CLI 출력 일치 (`tests/boundary/test_u_e2e_smoke.py`)
+
+```bash
+pytest tests/boundary -v   # RED: 신규 테스트 FAIL 기대
+```
+
+#### GREEN · REFACTOR *(RED 완료 후)*
+
+- [ ] **P1-10** — **Green** — 직전 failing만 통과하는 최소 구현 (`src/entity/` 또는 `src/control/` / `src/boundary/`)
+- [ ] **P1-11** — **Refactor** — 비율 상수·검증 순서 정리 · assertion 변경 금지 · `pytest tests/ -v` PASS 유지 (SC-3)
 
 #### Phase 1 — 하지 않는 것 *(Mom Test 표면 문제)*
 

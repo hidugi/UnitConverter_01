@@ -5,6 +5,7 @@ requires-python = ">=3.10"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+gui = ["PyQt6>=6.4"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

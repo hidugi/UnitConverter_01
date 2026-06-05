@@ -82,9 +82,15 @@ deactivate
 |------|------|
 | [Mom Test 보고서](Report/01.REPORT.md) | 인터뷰·증거·진짜/표면 문제 (STEP 1) |
 | [문제 정의 보고서](Report/01.UnitConverter_ProblemDefinition_Report.md) | Invariant, R-G-I-O, 세션 3 범위 |
+| [Harness · Cursor 설계](Report/02.REPORT.md) | 세션 3 — Harness · Rule · Hook |
+| [RED 스켈레톤](Report/03.REPORT.md) | 세션 4 — D/U RED · 테스트 스켈레톤 |
+| [GREEN · CLI](Report/04.REPORT.md) | 세션 5 — Logic+UI GREEN · P1-04 CLI |
+| [Golden Master](Report/04.REPORT-GoldenMaster.md) | U-004 stdout 기준선 · `tests/_approval.py` |
+| [REFACTOR 스멜 스캔](Report/05.REPORT-refactor-smell.md) | P0/P1/P2 스멜 · `/refactor-safe` 후보 |
 | [PRD](docs/PRD.md) | 입·출력, 오류 코드, Phase 로드맵, 수용 기준 (SSoT) |
 | [테스트 플랜](docs/TEST_PLAN.md) | Dual-Track TDD · D-*/U-* · RED/GREEN/REFACTOR 순서 |
-| [Prompt Export](Prompting/01.REPORT-Prompt.md) | Cursor 대화 기록 |
+| [Golden Master Command](.cursor/commands/golden-master.md) | `/golden-master` — 기준선 캡처·검증 |
+| [Prompt Export](Prompting/05.REPORT-refactor-smell-Prompt.md) | 최신 Cursor 대화 기록 |
 
 ---
 
@@ -157,9 +163,10 @@ pytest tests/entity tests/control -v   # GREEN: 17 passed
 - [x] **U-002** — Mock `FORMAT_INVALID` — 형식 오류 안내 출력 (`tests/boundary/test_u_cli_errors.py`)
 - [x] **U-003** — Mock `UNKNOWN_UNIT` — `Unknown unit: cubit` 유사 메시지 (`tests/boundary/test_u_cli_errors.py`)
 - [x] **U-004** — end-to-end smoke — `meter:2.5` boundary→control, Logic 결과와 CLI 출력 일치 (`tests/boundary/test_u_e2e_smoke.py`)
+- [x] **U-004 golden** — Golden Master — `meter:2.5` CLI stdout ↔ `tests/golden/u004_meter_25_stdout.approved.txt` (`test_u004_golden_meter_25_stdout`)
 
 ```bash
-pytest tests/boundary -v   # GREEN: 4 passed
+pytest tests/boundary -v   # GREEN + Golden: 5 passed
 ```
 
 #### GREEN 단계 — UI Track *(src/boundary)*
@@ -174,29 +181,60 @@ pytest tests/boundary -v   # GREEN: 4 passed
 #### GREEN · REFACTOR *(RED 완료 후)*
 
 - [x] **P1-10** — **Green** — D-001~D-007 · U-001~U-004 최소 구현 · `pytest tests/ -v` **21 passed**
-- [ ] **P1-11** — **Refactor** — 비율 상수·검증 순서 정리 · assertion 변경 금지 · `pytest tests/ -v` PASS 유지 (SC-3)
+- [ ] **P1-11** — **Refactor** — 스멜 기반 구조 개선 · assertion·golden 변경 금지 · `pytest tests/ -v` **22 passed** 유지 (SC-3)
 
 #### GREEN PASS *(Golden Master 선행 · SC-T5)*
 
-Phase 1 **Rule · Command · Test Loop** GREEN PASS 완료 — REFACTOR(P1-11) 또는 Golden Master 캡처 전 기준선.
+Phase 1 **Rule · Command · Test Loop** GREEN PASS 완료.
 
 | ID | 검증 | 결과 |
 |----|------|:----:|
 | **GP-01** | Logic Track — `pytest tests/entity tests/control -v` | 17 passed |
-| **GP-02** | UI Track — `pytest tests/boundary -v` | 4 passed |
-| **GP-03** | 전체 회귀 — `pytest tests/ -v` | 21 passed |
+| **GP-02** | UI Track — `pytest tests/boundary -v` | 5 passed |
+| **GP-03** | 전체 회귀 — `pytest tests/ -v` | 22 passed |
 | **GP-04** | CLI e2e — `UnitConverter.py` → `boundary.cli.run` (P1-04) | ✅ |
 | **GP-05** | SC-1~3 · G-01~03 — D-005~D-007 · U-001 · U-004 | ✅ |
 | **SC-T5** | TEST_PLAN §10 Phase 1 GREEN PASS | ✅ |
 
 ```bash
 pytest tests/entity tests/control -v   # Logic: 17 passed
-pytest tests/boundary -v               # UI: 4 passed
-pytest tests/ -v                       # Golden Master baseline: 21 passed
+pytest tests/boundary -v               # UI + golden: 5 passed
+pytest tests/ -v                       # 회귀 기준선: 22 passed
 python UnitConverter.py                # P1-04 CLI (예: meter:2.5)
 ```
 
-**다음:** Golden Master(동작 기준선 고정) → REFACTOR(P1-11) · `/review-ecb`
+#### Golden Master *(GREEN PASS 이후 · REFACTOR 전)*
+
+선언: `Phase 1 / Layer boundary / Track UI / Golden Master`
+
+- [x] **GM-01** — `tests/_approval.py` — `assert_matches_golden(actual, relative)`
+- [x] **GM-02** — U-004 golden — `test_u004_golden_meter_25_stdout` (Mock 금지 · real e2e)
+- [x] **GM-03** — 기준 파일 — `tests/golden/u004_meter_25_stdout.approved.txt`
+- [x] **GM-04** — matched 검증 · `pytest tests/ -v` **22 passed**
+
+```powershell
+# 기준 파일 재생성 (Windows)
+$env:UPDATE_GOLDEN=1
+python -m pytest tests/boundary/test_u_e2e_smoke.py::test_u004_golden_meter_25_stdout -v
+```
+
+상세: [`.cursor/commands/golden-master.md`](.cursor/commands/golden-master.md) · [`Report/04.REPORT-GoldenMaster.md`](Report/04.REPORT-GoldenMaster.md)
+
+#### REFACTOR — 스멜 스캔 *(P1-11 선행 · 코드 수정 없음)*
+
+선언: `Phase: refactor | Scope: src/ tests/ | Track: Logic+UI`
+
+- [x] **RF-01** — pytest 전제 — `pytest tests/ -v` **22 passed**
+- [x] **RF-02** — 6종 스멜 스캔 — P0 1 · P1 2 · P2 2 · ECB E001~E003 없음
+- [x] **RF-03** — `/refactor-safe` 후보 3건 선정 (Budget: 파일≤3 · 메서드≤3)
+- [ ] **RF-04** — 후보 1 — `_make_error()` 추출 (`src/control/convert_length.py`)
+- [ ] **RF-05** — 후보 2 — 검증 단계 private 함수 분리
+- [ ] **RF-06** — 후보 3 — `DECIMAL_PLACES = 1` (`src/entity/convert_length.py`)
+- [ ] **RF-07** — REFACTOR 후 golden matched · 22 passed 재확인
+
+상세: [`Report/05.REPORT-refactor-smell.md`](Report/05.REPORT-refactor-smell.md)
+
+**다음:** `/refactor-safe` 후보 1 (`_make_error` 추출) → P1-11 완료 · `/review-ecb`
 
 #### Phase 1 — 하지 않는 것 *(Mom Test 표면 문제)*
 

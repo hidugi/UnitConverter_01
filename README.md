@@ -63,6 +63,91 @@ deactivate
 - **출력 포맷 선택 기능** 
    - JSON / CSV / 표 형태 출력
 
+---
+
+## 문서 · 한 줄 요약
+
+**“단위 변환 앱을 만든다”가 아니라**, meter / feet / yard 견적·도면을 **같은 비율·같은 결과**로 환산할 수 있는 **계약**을 고정한다.
+
+**Mom Test 근거:** *견적은 meter, 도면은 feet라서 반나절 · 3.28 vs 3.28084로 재단 · yard는 변환표에 없음.*
+
+| 문서 | 용도 |
+|------|------|
+| [PRD](docs/PRD.md) | 입·출력, 오류 코드, Phase 로드맵, 수용 기준 (SSoT) |
+| [문제 정의 보고서](Report/01.UnitConverter_ProblemDefinition_Report.md) | Mom Test, Invariant, 세션 3 범위 |
+
+---
+
+## PRD 기반 — 해야 할 목록
+
+상세 계약·오류 코드는 [`docs/PRD.md`](docs/PRD.md) 참고.
+
+### Phase 1 — Rule · Command · Test Loop *(현재)*
+
+**목표:** G-01 전 단위 환산 · G-02 명시적 실패 · G-03 Test Loop 회귀 보호
+
+#### `convert_length` 구현
+
+- [ ] **P1-01** — `convert_length(input_str)` API 정의 (`ConversionResult` 계약)
+- [ ] **P1-02** — meter 기준 정규화 (INV-01) · `3.28084` / `1.09361` 비율 (INV-02, INV-03)
+- [ ] **P1-03** — 성공 시 **meter·feet·yard 전부** 출력 (INV-07)
+- [ ] **P1-04** — `UnitConverter.py` `main()`에서 `convert_length` 호출로 연결
+
+#### 입력 검증 · 오류 코드
+
+- [ ] **P1-05** — `:` 없음 → `FORMAT_INVALID`
+- [ ] **P1-06** — 숫자 파싱 실패 → `VALUE_NOT_NUMBER`
+- [ ] **P1-07** — 미지 단위 → `UNKNOWN_UNIT`
+- [ ] **P1-08** — 음수 → `NEGATIVE_VALUE`
+
+#### Test Loop (`tests/test_convert_length.py`)
+
+- [ ] **P1-09** — **Red** Rule별 실패 테스트 작성 (위 오류 코드 + 정상 1건)
+- [ ] **P1-10** — **Green** `convert_length` 최소 구현으로 테스트 통과
+- [ ] **P1-11** — **Refactor** 비율 상수·검증 순서 정리, 회귀 유지
+
+#### 성공 기준 (SC-1~3)
+
+- [ ] **SC-1** — `meter:2.5` / `feet:8.2` / `yard:2.7` 픽스처 → **1초 이내** 전 단위 환산
+- [ ] **SC-2** — `meter:2.5` → feet `8.2` (3.28084), yard 포함 · **3.28 사용 시 실패** 테스트
+- [ ] **SC-3** — 동일 입력 두 번 → 동일 결과 · refactor 후 `pytest` green
+
+```bash
+pytest tests/ -v
+```
+
+#### Phase 1 — 하지 않는 것 *(Mom Test 표면 문제)*
+
+- 단위 변환 **웹·모바일 앱** · **GUI** · 견적서 PDF
+- JSON/YAML 설정 · 동적 cubit 등록 · 출력 포맷 선택
+- inch/cm 등 **전 단위 일반화**
+
+---
+
+### Phase 2 — OCP / SRP 리팩터 *(후속)*
+
+- [ ] **P2-01** — 단위 변환 인터페이스 분리 (OCP)
+- [ ] **P2-02** — 입력 검증 / 환산 / 출력 클래스 분리 (SRP)
+- [ ] **P2-03** — `parse_input` 분리 또는 내부 모듈화 (선택)
+- [ ] **P2-04** — 리팩터 후 SC-3 회귀 테스트 유지
+
+---
+
+### Phase 3 — 설정 외부화 · 동적 단위 *(README 추가 요구)*
+
+- [ ] **P3-01** — 변환 비율 JSON/YAML 로드
+- [ ] **P3-02** — 런타임 단위 등록 (`1 cubit = 0.4572 meter` 등)
+- [ ] **P3-03** — 동적 단위 등록·로드 TC 작성
+
+---
+
+### Phase 4 — 출력 포맷 · CLI *(후속)*
+
+- [ ] **P4-01** — JSON / CSV / 표 형태 출력 선택
+- [ ] **P4-02** — CLI 입출력 polish
+- [ ] **P4-03** — 포맷별 TC 작성
+
+---
 
 ## 생성형AI를 활용한 Activities (6 시간)
 

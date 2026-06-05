@@ -17,6 +17,13 @@ venv\Scripts\activate
 # 가상환경 활성화 (macOS/Linux)
 source venv/bin/activate
 
+# 개발 의존성 (pytest — 테스트 실행에 필요)
+pip install pytest
+# 또는: pip install -e ".[dev]"
+
+# 테스트
+python -m pytest tests/ -v
+
 # 실행
 python UnitConverter.py
 
@@ -73,8 +80,11 @@ deactivate
 
 | 문서 | 용도 |
 |------|------|
+| [Mom Test 보고서](Report/01.REPORT.md) | 인터뷰·증거·진짜/표면 문제 (STEP 1) |
+| [문제 정의 보고서](Report/01.UnitConverter_ProblemDefinition_Report.md) | Invariant, R-G-I-O, 세션 3 범위 |
 | [PRD](docs/PRD.md) | 입·출력, 오류 코드, Phase 로드맵, 수용 기준 (SSoT) |
-| [문제 정의 보고서](Report/01.UnitConverter_ProblemDefinition_Report.md) | Mom Test, Invariant, 세션 3 범위 |
+| [테스트 플랜](docs/TEST_PLAN.md) | Dual-Track TDD · D-*/U-* · RED/GREEN/REFACTOR 순서 |
+| [Prompt Export](Prompting/01.REPORT-Prompt.md) | Cursor 대화 기록 |
 
 ---
 
@@ -88,33 +98,105 @@ deactivate
 
 #### `convert_length` 구현
 
-- [ ] **P1-01** — `convert_length(input_str)` API 정의 (`ConversionResult` 계약)
-- [ ] **P1-02** — meter 기준 정규화 (INV-01) · `3.28084` / `1.09361` 비율 (INV-02, INV-03)
-- [ ] **P1-03** — 성공 시 **meter·feet·yard 전부** 출력 (INV-07)
-- [ ] **P1-04** — `UnitConverter.py` `main()`에서 `convert_length` 호출로 연결
+- [x] **P1-01** — `convert_length(input_str)` API 정의 (`ConversionResult` 계약)
+- [x] **P1-02** — meter 기준 정규화 (INV-01) · `3.28084` / `1.09361` 비율 (INV-02, INV-03)
+- [x] **P1-03** — 성공 시 **meter·feet·yard 전부** 출력 (INV-07)
+- [x] **P1-04** — `UnitConverter.py` `main()`에서 `convert_length` 호출로 연결
 
 #### 입력 검증 · 오류 코드
 
-- [ ] **P1-05** — `:` 없음 → `FORMAT_INVALID`
-- [ ] **P1-06** — 숫자 파싱 실패 → `VALUE_NOT_NUMBER`
-- [ ] **P1-07** — 미지 단위 → `UNKNOWN_UNIT`
-- [ ] **P1-08** — 음수 → `NEGATIVE_VALUE`
+- [x] **P1-05** — `:` 없음 → `FORMAT_INVALID`
+- [x] **P1-06** — 숫자 파싱 실패 → `VALUE_NOT_NUMBER`
+- [x] **P1-07** — 미지 단위 → `UNKNOWN_UNIT`
+- [x] **P1-08** — 음수 → `NEGATIVE_VALUE`
 
-#### Test Loop (`tests/test_convert_length.py`)
+#### RED 단계 — Logic Track *(tests만 작성, `src/` 수정 금지)*
 
-- [ ] **P1-09** — **Red** Rule별 실패 테스트 작성 (위 오류 코드 + 정상 1건)
-- [ ] **P1-10** — **Green** `convert_length` 최소 구현으로 테스트 통과
-- [ ] **P1-11** — **Refactor** 비율 상수·검증 순서 정리, 회귀 유지
+상세: [`docs/TEST_PLAN.md`](docs/TEST_PLAN.md) · 선언: `Phase 1 / Layer {entity|control} / Track Logic / RED`
 
-#### 성공 기준 (SC-1~3)
+**공통 (RED마다)**
 
-- [ ] **SC-1** — `meter:2.5` / `feet:8.2` / `yard:2.7` 픽스처 → **1초 이내** 전 단위 환산
-- [ ] **SC-2** — `meter:2.5` → feet `8.2` (3.28084), yard 포함 · **3.28 사용 시 실패** 테스트
-- [ ] **SC-3** — 동일 입력 두 번 → 동일 결과 · refactor 후 `pytest` green
+- [x] **RED-00** — `@docs/PRD.md` Rule ID 확인 후 `tests/{entity|control}/test_d_*.py`에 **실패 테스트만** 추가
+- [x] **RED-00** — 함수명·주석에 `D-*` + Rule ID 기록 · Domain Mock 사용 금지 (E004)
+- [x] **RED-00** — `pytest tests/entity tests/control -v` 실행 → **의도적 FAIL** 확인
+
+**검증 · 오류 (`tests/control/`)**
+
+- [x] **D-001** — `FORMAT_INVALID` — `meter2.5`, `:2.5`, `meter:` → `ok=False`, `error="FORMAT_INVALID"` (`test_d_format.py`)
+- [x] **D-002** — `VALUE_NOT_NUMBER` — `meter:abc`, `feet:2.5.3` → `error="VALUE_NOT_NUMBER"` (`test_d_format.py`)
+- [x] **D-003** — `UNKNOWN_UNIT` — `cubit:1.0`, `inch:10` → `error="UNKNOWN_UNIT"`, message에 unit 포함 (`test_d_units.py`)
+- [x] **D-004** — `NEGATIVE_VALUE` — `meter:-1`, `feet:-0.1` → `error="NEGATIVE_VALUE"` (`test_d_validation.py`)
+
+**정상 환산 · 수용 기준**
+
+- [x] **D-005** — INV-07, SC-1 — 픽스처 `meter:2.5` / `feet:8.2` / `yard:2.7` → conversions에 **meter·feet·yard 3개** (`test_d_convert.py`)
+- [x] **D-006** — INV-02, SC-2 — entity 상수 `3.28084` / `1.09361` assert · `meter:2.5` → feet=`8.2`, yard=`2.7` · **3.28 사용 시 불일치** (`test_d_ratios.py`)
+- [x] **D-007** — INV-08, SC-3 — 동일 `input_str` 2회 호출 → `ConversionResult` 완전 동일 (`test_d_idempotent.py`)
 
 ```bash
-pytest tests/ -v
+pytest tests/entity tests/control -v   # GREEN: 17 passed
 ```
+
+#### GREEN 단계 — Logic Track *(src/entity · src/control)*
+
+선언: `Phase 1 / Layer {entity|control} / Track Logic / GREEN`
+
+- [x] **D-001 GREEN** — `FORMAT_INVALID` 검증 (`src/control/convert_length.py`)
+- [x] **D-002 GREEN** — `VALUE_NOT_NUMBER` 검증 (`src/control/convert_length.py`)
+- [x] **D-003 GREEN** — `UNKNOWN_UNIT` 검증 (`src/control/convert_length.py`)
+- [x] **D-004 GREEN** — `NEGATIVE_VALUE` 검증 (`src/control/convert_length.py`)
+- [x] **D-005 GREEN** — 3 픽스처 전 단위 환산 (`src/entity/convert_length.py`, `src/control/convert_length.py`)
+- [x] **D-006 GREEN** — 비율 상수 `3.28084` / `1.09361` (`src/entity/ratios.py`)
+- [x] **D-007 GREEN** — 결정적 `ConversionResult` (`src/control/convert_length.py`)
+
+#### RED 단계 — UI Track *(Logic Track 전체 green 이후)*
+
+선언: `Phase 1 / Layer boundary / Track UI / RED` · Logic/UI Track **한 사이클에 섞지 않음** (E006)
+
+- [x] **U-001** — Mock 성공 — CLI stdout에 `8.2 feet`, `2.7 yard` 포함 (`tests/boundary/test_u_cli_success.py`)
+- [x] **U-002** — Mock `FORMAT_INVALID` — 형식 오류 안내 출력 (`tests/boundary/test_u_cli_errors.py`)
+- [x] **U-003** — Mock `UNKNOWN_UNIT` — `Unknown unit: cubit` 유사 메시지 (`tests/boundary/test_u_cli_errors.py`)
+- [x] **U-004** — end-to-end smoke — `meter:2.5` boundary→control, Logic 결과와 CLI 출력 일치 (`tests/boundary/test_u_e2e_smoke.py`)
+
+```bash
+pytest tests/boundary -v   # GREEN: 4 passed
+```
+
+#### GREEN 단계 — UI Track *(src/boundary)*
+
+선언: `Phase 1 / Layer boundary / Track UI / GREEN`
+
+- [x] **U-001 GREEN** — 성공 CLI stdout (`src/boundary/cli.py`)
+- [x] **U-002 GREEN** — `FORMAT_INVALID` 메시지 출력 (`src/boundary/cli.py`)
+- [x] **U-003 GREEN** — `UNKNOWN_UNIT` 메시지 출력 (`src/boundary/cli.py`)
+- [x] **U-004 GREEN** — boundary→control e2e smoke (`src/boundary/cli.py` → control)
+
+#### GREEN · REFACTOR *(RED 완료 후)*
+
+- [x] **P1-10** — **Green** — D-001~D-007 · U-001~U-004 최소 구현 · `pytest tests/ -v` **21 passed**
+- [ ] **P1-11** — **Refactor** — 비율 상수·검증 순서 정리 · assertion 변경 금지 · `pytest tests/ -v` PASS 유지 (SC-3)
+
+#### GREEN PASS *(Golden Master 선행 · SC-T5)*
+
+Phase 1 **Rule · Command · Test Loop** GREEN PASS 완료 — REFACTOR(P1-11) 또는 Golden Master 캡처 전 기준선.
+
+| ID | 검증 | 결과 |
+|----|------|:----:|
+| **GP-01** | Logic Track — `pytest tests/entity tests/control -v` | 17 passed |
+| **GP-02** | UI Track — `pytest tests/boundary -v` | 4 passed |
+| **GP-03** | 전체 회귀 — `pytest tests/ -v` | 21 passed |
+| **GP-04** | CLI e2e — `UnitConverter.py` → `boundary.cli.run` (P1-04) | ✅ |
+| **GP-05** | SC-1~3 · G-01~03 — D-005~D-007 · U-001 · U-004 | ✅ |
+| **SC-T5** | TEST_PLAN §10 Phase 1 GREEN PASS | ✅ |
+
+```bash
+pytest tests/entity tests/control -v   # Logic: 17 passed
+pytest tests/boundary -v               # UI: 4 passed
+pytest tests/ -v                       # Golden Master baseline: 21 passed
+python UnitConverter.py                # P1-04 CLI (예: meter:2.5)
+```
+
+**다음:** Golden Master(동작 기준선 고정) → REFACTOR(P1-11) · `/review-ecb`
 
 #### Phase 1 — 하지 않는 것 *(Mom Test 표면 문제)*
 

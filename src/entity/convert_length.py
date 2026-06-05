@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from entity.ratios import FEET_PER_METER, YARD_PER_METER
 
+DECIMAL_PLACES = 1
+
 
 def convert_length(unit: str, value: float) -> list[dict[str, float | str]]:
     """Normalize to meter and return all unit conversions (1-decimal rounding)."""
@@ -16,11 +18,15 @@ def convert_length(unit: str, value: float) -> list[dict[str, float | str]]:
     else:
         raise ValueError(f"unsupported unit: {unit}")
 
-    meter_display = round(meter_value, 1)
+    meter_display = round(meter_value, DECIMAL_PLACES)
 
     meter_out = value if unit == "meter" else meter_display
-    feet_out = value if unit == "feet" else round(meter_display * FEET_PER_METER, 1)
-    yard_out = value if unit == "yard" else round(meter_display * YARD_PER_METER, 1)
+    feet_out = (
+        value if unit == "feet" else round(meter_display * FEET_PER_METER, DECIMAL_PLACES)
+    )
+    yard_out = (
+        value if unit == "yard" else round(meter_display * YARD_PER_METER, DECIMAL_PLACES)
+    )
 
     return [
         {"unit": "meter", "value": meter_out},

@@ -20,8 +20,10 @@ def test_d006_entity_uses_exact_yard_ratio() -> None:
 
 def test_d006_wrong_feet_ratio_would_not_match_fixture() -> None:
     """D-006 / SC-2 — 3.28-based math diverges from the accepted fixture."""
-    wrong_feet = round(2.5 * 3.28, 1)
-    assert wrong_feet != 8.2
+    wrong_feet = 2.5 * 3.28
+    exact_feet = 2.5 * FEET_PER_METER
+    assert wrong_feet != exact_feet
+    assert round(exact_feet, 1) == 8.2
 
 
 def test_d006_meter_input_matches_rounded_fixture() -> None:

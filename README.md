@@ -87,10 +87,12 @@ deactivate
 | [GREEN · CLI](Report/04.REPORT.md) | 세션 5 — Logic+UI GREEN · P1-04 CLI |
 | [Golden Master](Report/04.REPORT-GoldenMaster.md) | U-004 stdout 기준선 · `tests/_approval.py` |
 | [REFACTOR 스멜 스캔](Report/05.REPORT-refactor-smell.md) | P0/P1/P2 스멜 · `/refactor-safe` 후보 |
+| [REFACTOR Safe 실행](Report/05.REPORT-refactor-safe.md) | 후보 1~3 완료 · golden matched · 22 passed |
 | [PRD](docs/PRD.md) | 입·출력, 오류 코드, Phase 로드맵, 수용 기준 (SSoT) |
 | [테스트 플랜](docs/TEST_PLAN.md) | Dual-Track TDD · D-*/U-* · RED/GREEN/REFACTOR 순서 |
 | [Golden Master Command](.cursor/commands/golden-master.md) | `/golden-master` — 기준선 캡처·검증 |
-| [Prompt Export](Prompting/05.REPORT-refactor-smell-Prompt.md) | 최신 Cursor 대화 기록 |
+| [Prompt Export — 스멜 스캔](Prompting/05.REPORT-refactor-smell-Prompt.md) | REFACTOR 스멜 스캔 대화 기록 |
+| [Prompt Export — Safe 실행](Prompting/05.REPORT-refactor-safe-Prompt.md) | REFACTOR Safe 실행 대화 기록 |
 
 ---
 
@@ -181,7 +183,7 @@ pytest tests/boundary -v   # GREEN + Golden: 5 passed
 #### GREEN · REFACTOR *(RED 완료 후)*
 
 - [x] **P1-10** — **Green** — D-001~D-007 · U-001~U-004 최소 구현 · `pytest tests/ -v` **21 passed**
-- [ ] **P1-11** — **Refactor** — 스멜 기반 구조 개선 · assertion·golden 변경 금지 · `pytest tests/ -v` **22 passed** 유지 (SC-3)
+- [x] **P1-11** — **Refactor** — 스멜 기반 구조 개선 · assertion·golden 변경 금지 · `pytest tests/ -v` **22 passed** 유지 (SC-3)
 
 #### GREEN PASS *(Golden Master 선행 · SC-T5)*
 
@@ -227,14 +229,14 @@ python -m pytest tests/boundary/test_u_e2e_smoke.py::test_u004_golden_meter_25_s
 - [x] **RF-01** — pytest 전제 — `pytest tests/ -v` **22 passed**
 - [x] **RF-02** — 6종 스멜 스캔 — P0 1 · P1 2 · P2 2 · ECB E001~E003 없음
 - [x] **RF-03** — `/refactor-safe` 후보 3건 선정 (Budget: 파일≤3 · 메서드≤3)
-- [ ] **RF-04** — 후보 1 — `_make_error()` 추출 (`src/control/convert_length.py`)
-- [ ] **RF-05** — 후보 2 — 검증 단계 private 함수 분리
-- [ ] **RF-06** — 후보 3 — `DECIMAL_PLACES = 1` (`src/entity/convert_length.py`)
-- [ ] **RF-07** — REFACTOR 후 golden matched · 22 passed 재확인
+- [x] **RF-04** — 후보 1 — `_make_error()` 추출 (`src/control/convert_length.py`)
+- [x] **RF-05** — 후보 2 — `_parse_format()` / `_validate_unit_and_value()` 분리
+- [x] **RF-06** — 후보 3 — `DECIMAL_PLACES = 1` (`src/entity/convert_length.py`)
+- [x] **RF-07** — REFACTOR 후 golden matched · 22 passed 재확인
 
-상세: [`Report/05.REPORT-refactor-smell.md`](Report/05.REPORT-refactor-smell.md)
+상세: [`Report/05.REPORT-refactor-smell.md`](Report/05.REPORT-refactor-smell.md) · [`Report/05.REPORT-refactor-safe.md`](Report/05.REPORT-refactor-safe.md)
 
-**다음:** `/refactor-safe` 후보 1 (`_make_error` 추출) → P1-11 완료 · `/review-ecb`
+**다음:** `/review-ecb` — E001~E007 공식 점검
 
 #### Phase 1 — 하지 않는 것 *(Mom Test 표면 문제)*
 

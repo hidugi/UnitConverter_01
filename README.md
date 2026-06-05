@@ -73,8 +73,10 @@ deactivate
 
 | 문서 | 용도 |
 |------|------|
+| [Mom Test 보고서](Report/01.REPORT.md) | 인터뷰·증거·진짜/표면 문제 (STEP 1) |
+| [문제 정의 보고서](Report/01.UnitConverter_ProblemDefinition_Report.md) | Invariant, R-G-I-O, 세션 3 범위 |
 | [PRD](docs/PRD.md) | 입·출력, 오류 코드, Phase 로드맵, 수용 기준 (SSoT) |
-| [문제 정의 보고서](Report/01.UnitConverter_ProblemDefinition_Report.md) | Mom Test, Invariant, 세션 3 범위 |
+| [Prompt Export](Prompting/01.REPORT-Prompt.md) | Cursor 대화 기록 |
 
 ---
 

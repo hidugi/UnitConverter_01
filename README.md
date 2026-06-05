@@ -109,22 +109,22 @@ deactivate
 
 **공통 (RED마다)**
 
-- [ ] **RED-00** — `@docs/PRD.md` Rule ID 확인 후 `tests/{entity|control}/test_d_*.py`에 **실패 테스트만** 추가
-- [ ] **RED-00** — 함수명·주석에 `D-*` + Rule ID 기록 · Domain Mock 사용 금지 (E004)
-- [ ] **RED-00** — `pytest tests/entity tests/control -v` 실행 → **의도적 FAIL** 확인
+- [x] **RED-00** — `@docs/PRD.md` Rule ID 확인 후 `tests/{entity|control}/test_d_*.py`에 **실패 테스트만** 추가
+- [x] **RED-00** — 함수명·주석에 `D-*` + Rule ID 기록 · Domain Mock 사용 금지 (E004)
+- [x] **RED-00** — `pytest tests/entity tests/control -v` 실행 → **의도적 FAIL** 확인
 
 **검증 · 오류 (`tests/control/`)**
 
-- [ ] **D-001** — `FORMAT_INVALID` — `meter2.5`, `:2.5`, `meter:` → `ok=False`, `error="FORMAT_INVALID"` (`test_d_format.py`)
-- [ ] **D-002** — `VALUE_NOT_NUMBER` — `meter:abc`, `feet:2.5.3` → `error="VALUE_NOT_NUMBER"` (`test_d_format.py`)
-- [ ] **D-003** — `UNKNOWN_UNIT` — `cubit:1.0`, `inch:10` → `error="UNKNOWN_UNIT"`, message에 unit 포함 (`test_d_units.py`)
-- [ ] **D-004** — `NEGATIVE_VALUE` — `meter:-1`, `feet:-0.1` → `error="NEGATIVE_VALUE"` (`test_d_validation.py`)
+- [x] **D-001** — `FORMAT_INVALID` — `meter2.5`, `:2.5`, `meter:` → `ok=False`, `error="FORMAT_INVALID"` (`test_d_format.py`)
+- [x] **D-002** — `VALUE_NOT_NUMBER` — `meter:abc`, `feet:2.5.3` → `error="VALUE_NOT_NUMBER"` (`test_d_format.py`)
+- [x] **D-003** — `UNKNOWN_UNIT` — `cubit:1.0`, `inch:10` → `error="UNKNOWN_UNIT"`, message에 unit 포함 (`test_d_units.py`)
+- [x] **D-004** — `NEGATIVE_VALUE` — `meter:-1`, `feet:-0.1` → `error="NEGATIVE_VALUE"` (`test_d_validation.py`)
 
 **정상 환산 · 수용 기준**
 
-- [ ] **D-005** — INV-07, SC-1 — 픽스처 `meter:2.5` / `feet:8.2` / `yard:2.7` → conversions에 **meter·feet·yard 3개** (`test_d_convert.py`)
-- [ ] **D-006** — INV-02, SC-2 — entity 상수 `3.28084` / `1.09361` assert · `meter:2.5` → feet=`8.2`, yard=`2.7` · **3.28 사용 시 불일치** (`test_d_ratios.py`)
-- [ ] **D-007** — INV-08, SC-3 — 동일 `input_str` 2회 호출 → `ConversionResult` 완전 동일 (`test_d_idempotent.py`)
+- [x] **D-005** — INV-07, SC-1 — 픽스처 `meter:2.5` / `feet:8.2` / `yard:2.7` → conversions에 **meter·feet·yard 3개** (`test_d_convert.py`)
+- [x] **D-006** — INV-02, SC-2 — entity 상수 `3.28084` / `1.09361` assert · `meter:2.5` → feet=`8.2`, yard=`2.7` · **3.28 사용 시 불일치** (`test_d_ratios.py`)
+- [x] **D-007** — INV-08, SC-3 — 동일 `input_str` 2회 호출 → `ConversionResult` 완전 동일 (`test_d_idempotent.py`)
 
 ```bash
 pytest tests/entity tests/control -v   # RED: 신규 테스트 FAIL 기대
@@ -134,10 +134,10 @@ pytest tests/entity tests/control -v   # RED: 신규 테스트 FAIL 기대
 
 선언: `Phase 1 / Layer boundary / Track UI / RED` · Logic/UI Track **한 사이클에 섞지 않음** (E006)
 
-- [ ] **U-001** — Mock 성공 — CLI stdout에 `8.2 feet`, `2.7 yard` 포함 (`tests/boundary/test_u_cli_success.py`)
-- [ ] **U-002** — Mock `FORMAT_INVALID` — 형식 오류 안내 출력 (`tests/boundary/test_u_cli_errors.py`)
-- [ ] **U-003** — Mock `UNKNOWN_UNIT` — `Unknown unit: cubit` 유사 메시지 (`tests/boundary/test_u_cli_errors.py`)
-- [ ] **U-004** — end-to-end smoke — `meter:2.5` boundary→control, Logic 결과와 CLI 출력 일치 (`tests/boundary/test_u_e2e_smoke.py`)
+- [x] **U-001** — Mock 성공 — CLI stdout에 `8.2 feet`, `2.7 yard` 포함 (`tests/boundary/test_u_cli_success.py`)
+- [x] **U-002** — Mock `FORMAT_INVALID` — 형식 오류 안내 출력 (`tests/boundary/test_u_cli_errors.py`)
+- [x] **U-003** — Mock `UNKNOWN_UNIT` — `Unknown unit: cubit` 유사 메시지 (`tests/boundary/test_u_cli_errors.py`)
+- [x] **U-004** — end-to-end smoke — `meter:2.5` boundary→control, Logic 결과와 CLI 출력 일치 (`tests/boundary/test_u_e2e_smoke.py`)
 
 ```bash
 pytest tests/boundary -v   # RED: 신규 테스트 FAIL 기대
